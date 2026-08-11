@@ -294,5 +294,5 @@ const (
 
 var (
 	// DefaultTLDs 默认 TLD 列表
-	DefaultTLDs = []string{"com", "cc", "me", "xyz", "top", "click", "buzz", "club", "win", "life", "net"}
+	DefaultTLDs = []string{"com", "cc", "me", "xyz", "top", "click", "buzz", "club", "win", "life", "net", "ai", "org"}
 )

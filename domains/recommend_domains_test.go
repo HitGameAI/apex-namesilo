@@ -22,20 +22,17 @@ func TestRecommendDomains(t *testing.T) {
 	// 创建 Mock 客户端
 	mockClient := client.NewMockClient()
 
-	// 设置 Mock 响应内容
+	// Mock 数据：所有域名均为 example + TLD 格式，便于防御性过滤
+	// example.xyz 标记为 premium 且高价，用于验证价格过滤
 	availableContent := `<available>
 	<domain price="8.99" premium="0">example.com</domain>
-	<domain price="12.99" premium="0">myexample.com</domain>
-	<domain price="1.99" premium="0">example.net</domain>
-	<domain price="2.99" premium="0">example.org</domain>
-	<domain price="15.99" premium="1">premium-example.com</domain>
-	<domain price="3.99" premium="0">getexample.com</domain>
-	<domain price="5.99" premium="0">example-app.com</domain>
-	<domain price="4.99" premium="0">example.io</domain>
+	<domain price="12.99" premium="0">example.net</domain>
+	<domain price="1.99" premium="0">example.cc</domain>
+	<domain price="15.99" premium="1">example.xyz</domain>
 </available>
 <unavailable>
-	<domain>google.com</domain>
-	<domain>facebook.com</domain>
+	<domain>example.me</domain>
+	<domain>example.top</domain>
 </unavailable>`
 
 	// 设置 Mock 响应
@@ -45,6 +42,8 @@ func TestRecommendDomains(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("默认参数推荐", func(t *testing.T) {
+		// 不包含匹配域名时，仅生成随机变体域名
+		// Mock 不包含随机变体，防御性过滤后结果为空
 		resp, err := service.RecommendDomains(ctx, &RecommendDomainsRequest{
 			Keyword: "example",
 		})
@@ -52,10 +51,9 @@ func TestRecommendDomains(t *testing.T) {
 		assert.NoError(t, err, "RecommendDomains 应该成功")
 		assert.NotNil(t, resp, "响应不应该为空")
 
-		// 默认不包含匹配域名
-		assert.GreaterOrEqual(t, len(resp.Recommended), 0, "应该有推荐域名")
-		assert.Len(t, resp.Matched, 0, "默认不应该包含匹配域名")
-		assert.Len(t, resp.Unavailable, 2, "应该有 2 个不可用域名")
+		assert.GreaterOrEqual(t, len(resp.Recommended), 0, "推荐域名数应该 >= 0")
+		assert.Len(t, resp.Matched, 0, "默认不包含匹配域名")
+		assert.Len(t, resp.Unavailable, 0, "防御性过滤后不可用域名为空")
 	})
 
 	t.Run("包含匹配域名", func(t *testing.T) {
@@ -67,7 +65,7 @@ func TestRecommendDomains(t *testing.T) {
 		assert.NoError(t, err, "RecommendDomains 应该成功")
 		assert.NotNil(t, resp, "响应不应该为空")
 
-		// 应该包含匹配域名（原始关键词）
+		// 应该包含匹配域名（原始关键词 + TLD）
 		totalDomains := len(resp.Recommended) + len(resp.Matched)
 		assert.Greater(t, totalDomains, 0, "应该有可用域名")
 
@@ -75,6 +73,9 @@ func TestRecommendDomains(t *testing.T) {
 		for _, domain := range resp.Matched {
 			assert.Contains(t, domain.Domain, "example", "匹配域名应该包含关键词")
 		}
+
+		// 防御性过滤后，不可用域名仅为请求中存在的
+		assert.Len(t, resp.Unavailable, 2, "应该有 2 个不可用域名")
 	})
 
 	t.Run("自定义TLD", func(t *testing.T) {
@@ -87,7 +88,7 @@ func TestRecommendDomains(t *testing.T) {
 		assert.NoError(t, err, "RecommendDomains 应该成功")
 		assert.NotNil(t, resp, "响应不应该为空")
 
-		// 验证所有域名都是指定的 TLD
+		// 验证所有域名都是指定的 TLD（防御性过滤保证了这一点）
 		allDomains := append(resp.Recommended, resp.Matched...)
 		for _, domain := range allDomains {
 			tld := extractTLD(domain.Domain)
@@ -98,8 +99,9 @@ func TestRecommendDomains(t *testing.T) {
 	t.Run("自定义最大价格", func(t *testing.T) {
 		maxPrice := 5.0
 		resp, err := service.RecommendDomains(ctx, &RecommendDomainsRequest{
-			Keyword:  "example",
-			MaxPrice: maxPrice,
+			Keyword:        "example",
+			MaxPrice:       maxPrice,
+			IncludeMatched: true,
 		})
 
 		assert.NoError(t, err, "RecommendDomains 应该成功")
@@ -114,24 +116,10 @@ func TestRecommendDomains(t *testing.T) {
 		}
 	})
 
-	t.Run("自定义最大域名数量", func(t *testing.T) {
-		maxDomains := 3
-		resp, err := service.RecommendDomains(ctx, &RecommendDomainsRequest{
-			Keyword: "example",
-		})
-
-		assert.NoError(t, err, "RecommendDomains 应该成功")
-		assert.NotNil(t, resp, "响应不应该为空")
-
-		// 注意：实际返回的域名数量可能少于 maxDomains（因为价格过滤等原因）
-		totalDomains := len(resp.Recommended) + len(resp.Matched)
-		assert.LessOrEqual(t, totalDomains, maxDomains, "总域名数应该 <= %d", maxDomains)
-	})
-
 	t.Run("组合参数", func(t *testing.T) {
 		resp, err := service.RecommendDomains(ctx, &RecommendDomainsRequest{
 			Keyword:        "example",
-			TLDs:           []string{"com", "net", "org"},
+			TLDs:           []string{"com", "net"},
 			MaxPrice:       10.0,
 			IncludeMatched: true,
 		})
@@ -145,13 +133,9 @@ func TestRecommendDomains(t *testing.T) {
 			// 验证价格
 			assert.LessOrEqual(t, domain.Price, 10.0, "域名 %s 价格应该 <= 10.0", domain.Domain)
 
-			// 验证 TLD - 注意 mock 数据中可能有其他 TLD，我们只验证返回的域名
+			// 验证 TLD
 			tld := extractTLD(domain.Domain)
-			// 如果是我们测试生成的域名，应该是指定的 TLD
-			if domain.Price <= 10.0 {
-				// 由于 mock 返回的数据固定，这里只验证价格
-				t.Logf("Domain: %s, TLD: %s, Price: %.2f", domain.Domain, tld, domain.Price)
-			}
+			assert.Contains(t, []string{"com", "net"}, tld, "域名 %s 的 TLD 应该是 com 或 net", domain.Domain)
 		}
 
 		// 验证总数量限制
@@ -161,8 +145,9 @@ func TestRecommendDomains(t *testing.T) {
 	t.Run("过滤高价域名", func(t *testing.T) {
 		maxPrice := 3.0
 		resp, err := service.RecommendDomains(ctx, &RecommendDomainsRequest{
-			Keyword:  "example",
-			MaxPrice: maxPrice,
+			Keyword:        "example",
+			MaxPrice:       maxPrice,
+			IncludeMatched: true,
 		})
 
 		assert.NoError(t, err, "RecommendDomains 应该成功")
@@ -172,9 +157,97 @@ func TestRecommendDomains(t *testing.T) {
 		allDomains := append(resp.Recommended, resp.Matched...)
 		for _, domain := range allDomains {
 			assert.LessOrEqual(t, domain.Price, maxPrice, "域名 %s 价格应该 <= %.2f", domain.Domain, maxPrice)
-			// 确保不是 premium 域名或高价域名
-			assert.NotContains(t, domain.Domain, "premium", "不应该包含 premium 域名")
 		}
+	})
+}
+
+func TestRecommendDomainsKeywordWithTLD(t *testing.T) {
+	mockClient := client.NewMockClient()
+
+	// Mock 数据：包含 example + 各种 TLD 的域名（dev 不在 DefaultTLDs 中）
+	availableContent := `<available>
+	<domain price="8.99" premium="0">example.com</domain>
+	<domain price="1.99" premium="0">example.dev</domain>
+</available>
+<unavailable>
+	<domain>example.cc</domain>
+</unavailable>`
+
+	mockClient.WithMockResponse(client.MockSuccessXMLResponse("checkRegisterAvailability", availableContent))
+
+	service := NewService(mockClient)
+	ctx := context.Background()
+
+	t.Run("关键字包含新TLD", func(t *testing.T) {
+		// "example.dev" → keyword="example", TLD 添加 "dev"（dev 不在 DefaultTLDs 中）
+		resp, err := service.RecommendDomains(ctx, &RecommendDomainsRequest{
+			Keyword:        "example.dev",
+			IncludeMatched: true,
+		})
+
+		assert.NoError(t, err, "RecommendDomains 应该成功")
+		assert.NotNil(t, resp, "响应不应该为空")
+
+		// example.dev 应该在匹配结果中（dev 被添加到 TLD 列表）
+		found := false
+		for _, domain := range resp.Matched {
+			if domain.Domain == "example.dev" {
+				found = true
+				break
+			}
+		}
+		assert.True(t, found, "应该包含 example.dev")
+	})
+
+	t.Run("关键字包含已有TLD", func(t *testing.T) {
+		// "example.com" → keyword="example", TLD "com" 已在 DefaultTLDs 中
+		resp, err := service.RecommendDomains(ctx, &RecommendDomainsRequest{
+			Keyword:        "example.com",
+			IncludeMatched: true,
+		})
+
+		assert.NoError(t, err, "RecommendDomains 应该成功")
+		assert.NotNil(t, resp, "响应不应该为空")
+
+		// example.com 应该在匹配结果中
+		found := false
+		for _, domain := range resp.Matched {
+			if domain.Domain == "example.com" {
+				found = true
+				break
+			}
+		}
+		assert.True(t, found, "应该包含 example.com")
+
+		// example.dev 不应该出现（dev 不在 DefaultTLDs 中，关键字中也没有 .dev）
+		for _, domain := range resp.Matched {
+			assert.NotEqual(t, "example.dev", domain.Domain, "不应该包含 example.dev")
+		}
+	})
+
+	t.Run("关键字包含多级TLD", func(t *testing.T) {
+		// "example.dev.com" → keyword="example", TLD 添加 "dev"（com 已在 DefaultTLDs 中）
+		resp, err := service.RecommendDomains(ctx, &RecommendDomainsRequest{
+			Keyword:        "example.dev.com",
+			IncludeMatched: true,
+		})
+
+		assert.NoError(t, err, "RecommendDomains 应该成功")
+		assert.NotNil(t, resp, "响应不应该为空")
+
+		// example.com 和 example.dev 都应该在匹配结果中
+		foundCom := false
+		foundDev := false
+		for _, domain := range resp.Matched {
+			if domain.Domain == "example.com" {
+				foundCom = true
+			}
+			if domain.Domain == "example.dev" {
+				foundDev = true
+			}
+		}
+		assert.True(t, foundCom, "应该包含 example.com")
+		assert.True(t, foundDev, "应该包含 example.dev")
 	})
 }
 
@@ -203,16 +276,16 @@ func TestRecommendDomainsEmptyKeyword(t *testing.T) {
 func TestRecommendDomainsWithUnavailable(t *testing.T) {
 	mockClient := client.NewMockClient()
 
-	// 大部分域名都不可用的情况
+	// 大部分域名都不可用的情况（所有域名均为 example + TLD 格式）
 	availableContent := `<available>
-	<domain price="1.99" premium="0">example-unique-123.com</domain>
+	<domain price="1.99" premium="0">example.click</domain>
 </available>
 <unavailable>
 	<domain>example.com</domain>
 	<domain>example.net</domain>
-	<domain>example.org</domain>
-	<domain>myexample.com</domain>
-	<domain>getexample.com</domain>
+	<domain>example.cc</domain>
+	<domain>example.me</domain>
+	<domain>example.xyz</domain>
 </unavailable>`
 
 	mockClient.WithMockResponse(client.MockSuccessXMLResponse("checkRegisterAvailability", availableContent))

@@ -13,6 +13,7 @@ package domains
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/kamalyes/go-toolbox/pkg/mathx"
 	"github.com/kamalyes/go-toolbox/pkg/random"
@@ -28,8 +29,21 @@ func (s *Service) RecommendDomains(ctx context.Context, req *RecommendDomainsReq
 	tlds := mathx.IfEmpty(req.TLDs, DefaultTLDs)
 	includeMatched := req.IncludeMatched // 默认 false，需要显式设置
 
+	// 处理关键字中包含 TLD 的情况（如 12356abc.ai、12356abc.ai.com）
+	// 以第一个 . 为界，前半部分作为关键字，后半部分的每段都作为 TLD
+	// 若 TLD 不在列表中则添加，确保搜索时覆盖用户指定的所有 TLD
+	keyword := req.Keyword
+	if parts := strings.Split(keyword, "."); len(parts) > 1 && parts[0] != "" {
+		keyword = parts[0]
+		for _, tld := range parts[1:] {
+			if tld != "" && !mathx.ContainsAnySlice(tlds, tld) {
+				tlds = append(tlds, tld)
+			}
+		}
+	}
+
 	// 1. 生成推荐域名（基于关键词变体）
-	recommendKeywords := random.NewDomainKeywordBuilder(req.Keyword).Generate()
+	recommendKeywords := random.NewDomainKeywordBuilder(keyword).Generate()
 	recommendDomains := random.JoinDomainsWithTLDs(recommendKeywords, tlds)
 
 	// 2. 生成匹配域名（原始关键词）
@@ -37,7 +51,7 @@ func (s *Service) RecommendDomains(ctx context.Context, req *RecommendDomainsReq
 	var originalDomains []string
 
 	if includeMatched {
-		originalDomains = random.JoinDomainsWithTLDs([]string{req.Keyword}, tlds)
+		originalDomains = random.JoinDomainsWithTLDs([]string{keyword}, tlds)
 		allDomains = append(recommendDomains, originalDomains...)
 	} else {
 		allDomains = recommendDomains
@@ -57,15 +71,31 @@ func (s *Service) RecommendDomains(ctx context.Context, req *RecommendDomainsReq
 		return nil, fmt.Errorf("failed to check domain availability: %w", err)
 	}
 
-	// 5. 分离并过滤域名
+	// 5. 创建请求域名集合（防御性过滤，跳过 API 返回的未请求域名）
+	requestedDomainSet := make(map[string]bool, len(allDomains))
+	for _, d := range allDomains {
+		requestedDomainSet[d] = true
+	}
+
+	// 6. 分离并过滤域名
 	resp := &RecommendDomainsResponse{
 		Recommended: make([]AvailableDomain, 0),
 		Matched:     make([]AvailableDomain, 0),
-		Unavailable: checkResp.Reply.Unavailable,
 	}
 
-	// 处理可用域名：先按价格过滤，再限制数量
+	// 防御性过滤不可用域名列表
+	for _, d := range checkResp.Reply.Unavailable {
+		if requestedDomainSet[d] {
+			resp.Unavailable = append(resp.Unavailable, d)
+		}
+	}
+
+	// 处理可用域名：防御性过滤 + 价格过滤
 	for _, domain := range checkResp.Reply.Available {
+		// 防御性过滤：跳过 API 返回的未请求域名
+		if !requestedDomainSet[domain.Domain] {
+			continue
+		}
 		// 跳过超过最大价格的高级域名
 		if req.MaxPrice > 0 && domain.Price > req.MaxPrice {
 			continue
