@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	logger "github.com/kamalyes/go-logger"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -99,10 +100,11 @@ func TestNew_OptsOverrideMultipleConfigs(t *testing.T) {
 func TestNew_WithLogger(t *testing.T) {
 	apiKey := "test-api-key"
 	testLogger := &TestLogger{
-		DebugLogs: make([]string, 0),
-		InfoLogs:  make([]string, 0),
-		WarnLogs:  make([]string, 0),
-		ErrorLogs: make([]string, 0),
+		EmptyLogger: logger.NewEmptyLogger(),
+		DebugLogs:   make([]string, 0),
+		InfoLogs:    make([]string, 0),
+		WarnLogs:    make([]string, 0),
+		ErrorLogs:   make([]string, 0),
 	}
 
 	client, err := New(apiKey,
@@ -119,10 +121,11 @@ func TestNew_WithLogger(t *testing.T) {
 func TestNew_DebugOffIgnoresLogger(t *testing.T) {
 	apiKey := "test-api-key"
 	testLogger := &TestLogger{
-		DebugLogs: make([]string, 0),
-		InfoLogs:  make([]string, 0),
-		WarnLogs:  make([]string, 0),
-		ErrorLogs: make([]string, 0),
+		EmptyLogger: logger.NewEmptyLogger(),
+		DebugLogs:   make([]string, 0),
+		InfoLogs:    make([]string, 0),
+		WarnLogs:    make([]string, 0),
+		ErrorLogs:   make([]string, 0),
 	}
 
 	client, err := New(apiKey,

@@ -16,11 +16,13 @@ import (
 	"strings"
 	"testing"
 
+	logger "github.com/kamalyes/go-logger"
 	"github.com/stretchr/testify/assert"
 )
 
-// TestLogger 测试用的日志记录器
+// TestLogger 测试用的日志记录器，嵌入 *logger.EmptyLogger 自动实现 ILogger 全部方法
 type TestLogger struct {
+	*logger.EmptyLogger
 	DebugLogs []string
 	InfoLogs  []string
 	WarnLogs  []string
@@ -75,10 +77,11 @@ func (l *TestLogger) ErrorContext(ctx context.Context, msg string, keysAndValues
 func TestDoRequestWithLogger(t *testing.T) {
 	// 创建测试日志记录器
 	testLogger := &TestLogger{
-		DebugLogs: make([]string, 0),
-		InfoLogs:  make([]string, 0),
-		WarnLogs:  make([]string, 0),
-		ErrorLogs: make([]string, 0),
+		EmptyLogger: logger.NewEmptyLogger(),
+		DebugLogs:   make([]string, 0),
+		InfoLogs:    make([]string, 0),
+		WarnLogs:    make([]string, 0),
+		ErrorLogs:   make([]string, 0),
 	}
 
 	// 创建客户端

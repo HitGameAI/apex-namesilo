@@ -10,35 +10,19 @@
  */
 package types
 
-import "context"
+import (
+	logger "github.com/kamalyes/go-logger"
+)
 
-// Logger 日志接口
-type Logger interface {
-	DebugContext(ctx context.Context, msg string, keysAndValues ...interface{})
-	InfoContext(ctx context.Context, msg string, keysAndValues ...interface{})
-	WarnContext(ctx context.Context, msg string, keysAndValues ...interface{})
-	ErrorContext(ctx context.Context, msg string, keysAndValues ...interface{})
-}
+// Logger 日志接口，直接复用 go-logger.ILogger
+// go-logger.ILogger 提供了 DebugContext/InfoContext/WarnContext/ErrorContext 等方法，
+// 与 go-namesilo 的日志调用方式完全兼容
+type Logger = logger.ILogger
 
-// EmptyLogger 空日志记录器实现,不执行任何操作
-type EmptyLogger struct{}
+// NoLogger 直接复用 go-logger 的全局空日志器；未注入 Logger 时使用该实例，不输出任何日志
+var NoLogger = logger.NoLogger
 
-// DebugContext 实现 Logger 接口
-func (e *EmptyLogger) DebugContext(ctx context.Context, msg string, keysAndValues ...interface{}) {}
-
-// InfoContext 实现 Logger 接口
-func (e *EmptyLogger) InfoContext(ctx context.Context, msg string, keysAndValues ...interface{}) {}
-
-// WarnContext 实现 Logger 接口
-func (e *EmptyLogger) WarnContext(ctx context.Context, msg string, keysAndValues ...interface{}) {}
-
-// ErrorContext 实现 Logger 接口
-func (e *EmptyLogger) ErrorContext(ctx context.Context, msg string, keysAndValues ...interface{}) {}
-
-// noLogger 全局空日志记录器实例（单例）
-var noLogger Logger = &EmptyLogger{}
-
-// NewEmptyLogger 返回一个空日志记录器（单例模式）
+// NewEmptyLogger 返回一个空日志记录器（go-logger.NoLogger 单例）
 func NewEmptyLogger() Logger {
-	return noLogger
+	return NoLogger
 }
