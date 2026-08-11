@@ -16,7 +16,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/url"
-	"strings"
 
 	namesilo "github.com/kamalyes/go-namesilo"
 	"github.com/kamalyes/go-toolbox/pkg/errorx"
@@ -25,9 +24,6 @@ import (
 
 // DoRequest 执行 API 请求（公开给子模块使用）
 func (c *Client) DoRequest(ctx context.Context, operation string, params map[string]string) ([]byte, error) {
-	// 生成 traceId
-	traceId := osx.HashUnixMicroCipherText()
-
 	// 构建请求参数
 	queryParams := url.Values{}
 
@@ -57,10 +53,9 @@ func (c *Client) DoRequest(ctx context.Context, operation string, params map[str
 	var apiErr error
 	var recoverErr error
 
-	// defer 记录完整的请求和响应日志
+	// defer 记录请求和响应日志
 	defer func() {
-		c.logRequestResponse(ctx, traceId, operation, fullURL, queryParams.Encode(),
-			respStatus, respHeaders, respBody, apiErr, recoverErr)
+		c.logRequestResponse(ctx, operation, fullURL, respStatus, respHeaders, respBody, apiErr, recoverErr)
 	}()
 
 	// 使用 errorx.Recover 捕获 panic
@@ -133,71 +128,39 @@ func (c *Client) ParseResponse(data []byte, v interface{}) error {
 }
 
 // logRequestResponse 记录请求和响应日志
-func (c *Client) logRequestResponse(ctx context.Context, traceId, operation, fullURL, queryParams string,
+func (c *Client) logRequestResponse(ctx context.Context, operation, fullURL string,
 	respStatus string, respHeaders interface{}, respBody []byte, apiErr, recoverErr error) {
 
 	if recoverErr != nil {
-		// panic 情况记录错误日志
-		c.logPanicRequest(ctx, traceId, operation, fullURL, queryParams, recoverErr)
+		c.logger.ErrorContextKV(ctx, "🔗 NameSilo API panic",
+			"operation", operation,
+			"url", fullURL,
+			"error", recoverErr.Error(),
+		)
 		return
 	}
 
-	// 正常情况记录调试日志
-	c.logNormalRequestResponse(ctx, traceId, operation, fullURL, queryParams, respStatus, respHeaders, respBody, apiErr)
-}
-
-// logPanicRequest 记录 panic 请求日志
-func (c *Client) logPanicRequest(ctx context.Context, traceId, operation, fullURL, queryParams string, panicErr error) {
-	logMsg := c.formatRequestLog("🚨 NameSilo API Request PANIC", traceId, operation, fullURL, queryParams) +
-		fmt.Sprintf("❌ Panic Error : %v\n", panicErr) +
-		c.getLogSeparator()
-	c.logger.ErrorContext(ctx, logMsg)
-}
-
-// logNormalRequestResponse 记录正常请求响应日志
-func (c *Client) logNormalRequestResponse(ctx context.Context, traceId, operation, fullURL, queryParams string,
-	respStatus string, respHeaders interface{}, respBody []byte, apiErr error) {
-
-	statusIcon := "✅"
 	if apiErr != nil {
-		statusIcon = "❌"
+		c.logger.ErrorContextKV(ctx, "❌ NameSilo API error",
+			"operation", operation,
+			"url", fullURL,
+			"status", respStatus,
+			"error", apiErr.Error(),
+		)
+		return
 	}
 
-	logMsg := c.formatRequestLog(fmt.Sprintf("%s NameSilo API Request/Response", statusIcon), traceId, operation, fullURL, queryParams) +
-		c.formatResponseLog(respStatus, respHeaders, respBody, apiErr)
-	c.logger.DebugContext(ctx, logMsg)
-}
-
-// formatRequestLog 格式化请求日志
-func (c *Client) formatRequestLog(title, traceId, operation, fullURL, queryParams string) string {
-	return fmt.Sprintf(`
-%s
-%s
-%s
-📝 Trace ID    : %s
-🎯 Operation   : %s
-🔗 Request URL : %s
-📋 Query Params: %s
-%s
-`,
-		c.getLogSeparator(), title, c.getLogSeparator(),
-		traceId, operation, fullURL, queryParams,
-		c.getLogSeparator())
-}
-
-// formatResponseLog 格式化响应日志
-func (c *Client) formatResponseLog(respStatus string, respHeaders interface{}, respBody []byte, apiErr error) string {
-	return fmt.Sprintf(`📊 Status      : %s
-📦 Headers     : %v
-📏 Body Length : %d bytes
-📄 Body        : %s
-⚠️  Error       : %v
-%s`,
-		respStatus, respHeaders, len(respBody), string(respBody), apiErr,
-		c.getLogSeparator())
-}
-
-// getLogSeparator 获取日志分隔线
-func (c *Client) getLogSeparator() string {
-	return strings.Repeat("━", 70) + "\n"
+	c.logger.InfoContextKV(ctx, "🎯 NameSilo API request",
+		"operation", operation,
+		"url", fullURL,
+		"status", respStatus,
+		"headers", respHeaders,
+		"bodyLen", len(respBody),
+	)
+	if len(respBody) > 0 {
+		c.logger.DebugContextKV(ctx, "📏 NameSilo API response body",
+			"operation", operation,
+			"body", string(respBody),
+		)
+	}
 }
