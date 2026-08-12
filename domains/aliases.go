@@ -65,7 +65,7 @@ var (
 )
 
 var (
-	DefaultTLDs = types.DefaultTLDs
+	DefaultAllowedTLDs = types.DefaultAllowedTLDs
 )
 
 // ============================================================================

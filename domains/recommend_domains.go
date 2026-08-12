@@ -26,17 +26,18 @@ import (
 // 自动过滤超过最大价格的高级域名
 func (s *Service) RecommendDomains(ctx context.Context, req *RecommendDomainsRequest) (*RecommendDomainsResponse, error) {
 	// 设置默认值
-	tlds := mathx.IfEmpty(req.TLDs, DefaultTLDs)
+	tlds := mathx.IfEmpty(req.TLDs, DefaultAllowedTLDs)
 	includeMatched := req.IncludeMatched // 默认 false，需要显式设置
 
 	// 处理关键字中包含 TLD 的情况（如 12356abc.ai、12356abc.ai.com）
 	// 以第一个 . 为界，前半部分作为关键字，后半部分的每段都作为 TLD
-	// 若 TLD 不在列表中则添加，确保搜索时覆盖用户指定的所有 TLD
+	// 仅将白名单（DefaultAllowedTLDs）内的 TLD 加入搜索列表，非白名单 TLD（如 abc.cn 中的 cn）会被忽略，
+	// 避免拆分后用非白名单 TLD 生成推荐域名
 	keyword := req.Keyword
 	if parts := strings.Split(keyword, "."); len(parts) > 1 && parts[0] != "" {
 		keyword = parts[0]
 		for _, tld := range parts[1:] {
-			if tld != "" && !mathx.ContainsAnySlice(tlds, tld) {
+			if tld != "" && mathx.ContainsAnySlice(DefaultAllowedTLDs, tld) && !mathx.ContainsAnySlice(tlds, tld) {
 				tlds = append(tlds, tld)
 			}
 		}

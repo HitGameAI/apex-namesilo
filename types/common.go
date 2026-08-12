@@ -2,8 +2,8 @@
  * @Author: kamalyes 501893067@qq.com
  * @Date: 2025-12-30 00:00:00
  * @LastEditors: kamalyes 501893067@qq.com
- * @LastEditTime: 2026-01-16 19:23:00
- * @FilePath: \go-namesilo\types\common.go
+ * @LastEditTime: 2026-08-12 15:13:59
+ * @FilePath: \apex-core-service\go-namesilo\types\common.go
  * @Description:
  *
  * Copyright (c) 2025 by kamalyes, All Rights Reserved.
@@ -293,6 +293,14 @@ const (
 )
 
 var (
-	// DefaultTLDs 默认 TLD 列表
-	DefaultTLDs = []string{"com", "cc", "me", "xyz", "top", "click", "buzz", "club", "win", "life", "net", "ai", "org"}
+	// DefaultAllowedTLDs 默认允许的 TLD 白名单
+	// 域名搜索时若未指定 IncludeTLDs，则使用此白名单过滤
+	// 关键字中包含的 TLD 必须在此白名单内才会被搜索
+	DefaultAllowedTLDs = []string{
+		"com", "cc", "me", "xyz", "top", "click", "buzz", "club", "win", "life", "net", "ai", "org",
+		"cfd", "wiki", "io", "sbs", "one", "help", "art", "design",
+		"cyou", "online", "shop", "de", "info", "website",
+		"co", "lat", "space", "lol", "icu", "biz", "site", "cam",
+		"cloud", "ac", "fun", "autos",
+	}
 )

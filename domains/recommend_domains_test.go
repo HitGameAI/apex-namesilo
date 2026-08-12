@@ -164,7 +164,7 @@ func TestRecommendDomains(t *testing.T) {
 func TestRecommendDomainsKeywordWithTLD(t *testing.T) {
 	mockClient := client.NewMockClient()
 
-	// Mock 数据：包含 example + 各种 TLD 的域名（dev 不在 DefaultTLDs 中）
+	// Mock 数据：包含 example + 各种 TLD 的域名（dev 不在 DefaultAllowedTLDs 白名单中）
 	availableContent := `<available>
 	<domain price="8.99" premium="0">example.com</domain>
 	<domain price="1.99" premium="0">example.dev</domain>
@@ -178,8 +178,8 @@ func TestRecommendDomainsKeywordWithTLD(t *testing.T) {
 	service := NewService(mockClient)
 	ctx := context.Background()
 
-	t.Run("关键字包含新TLD", func(t *testing.T) {
-		// "example.dev" → keyword="example", TLD 添加 "dev"（dev 不在 DefaultTLDs 中）
+	t.Run("关键字包含非白名单TLD", func(t *testing.T) {
+		// "example.dev" → keyword="example"，dev 不在 DefaultAllowedTLDs 白名单中，会被忽略不加入 TLD 列表
 		resp, err := service.RecommendDomains(ctx, &RecommendDomainsRequest{
 			Keyword:        "example.dev",
 			IncludeMatched: true,
@@ -188,19 +188,27 @@ func TestRecommendDomainsKeywordWithTLD(t *testing.T) {
 		assert.NoError(t, err, "RecommendDomains 应该成功")
 		assert.NotNil(t, resp, "响应不应该为空")
 
-		// example.dev 应该在匹配结果中（dev 被添加到 TLD 列表）
-		found := false
+		// example.dev 不应该出现在任何结果中（dev 不在白名单，未被加入 TLD 列表）
 		for _, domain := range resp.Matched {
-			if domain.Domain == "example.dev" {
-				found = true
+			assert.NotEqual(t, "example.dev", domain.Domain, "不应该包含 example.dev")
+		}
+		for _, domain := range resp.Recommended {
+			assert.NotEqual(t, "example.dev", domain.Domain, "不应该包含 example.dev")
+		}
+
+		// example.com 应该在匹配结果中（com 在白名单中）
+		foundCom := false
+		for _, domain := range resp.Matched {
+			if domain.Domain == "example.com" {
+				foundCom = true
 				break
 			}
 		}
-		assert.True(t, found, "应该包含 example.dev")
+		assert.True(t, foundCom, "应该包含 example.com")
 	})
 
 	t.Run("关键字包含已有TLD", func(t *testing.T) {
-		// "example.com" → keyword="example", TLD "com" 已在 DefaultTLDs 中
+		// "example.com" → keyword="example", TLD "com" 已在 DefaultAllowedTLDs 白名单中
 		resp, err := service.RecommendDomains(ctx, &RecommendDomainsRequest{
 			Keyword:        "example.com",
 			IncludeMatched: true,
@@ -219,14 +227,14 @@ func TestRecommendDomainsKeywordWithTLD(t *testing.T) {
 		}
 		assert.True(t, found, "应该包含 example.com")
 
-		// example.dev 不应该出现（dev 不在 DefaultTLDs 中，关键字中也没有 .dev）
+		// example.dev 不应该出现（dev 不在 DefaultAllowedTLDs 白名单中，关键字中也没有 .dev）
 		for _, domain := range resp.Matched {
 			assert.NotEqual(t, "example.dev", domain.Domain, "不应该包含 example.dev")
 		}
 	})
 
 	t.Run("关键字包含多级TLD", func(t *testing.T) {
-		// "example.dev.com" → keyword="example", TLD 添加 "dev"（com 已在 DefaultTLDs 中）
+		// "example.dev.com" → keyword="example"，dev 不在白名单被忽略，com 在白名单中
 		resp, err := service.RecommendDomains(ctx, &RecommendDomainsRequest{
 			Keyword:        "example.dev.com",
 			IncludeMatched: true,
@@ -235,19 +243,19 @@ func TestRecommendDomainsKeywordWithTLD(t *testing.T) {
 		assert.NoError(t, err, "RecommendDomains 应该成功")
 		assert.NotNil(t, resp, "响应不应该为空")
 
-		// example.com 和 example.dev 都应该在匹配结果中
+		// example.com 应该在匹配结果中（com 在白名单中）
 		foundCom := false
-		foundDev := false
 		for _, domain := range resp.Matched {
 			if domain.Domain == "example.com" {
 				foundCom = true
 			}
-			if domain.Domain == "example.dev" {
-				foundDev = true
-			}
 		}
 		assert.True(t, foundCom, "应该包含 example.com")
-		assert.True(t, foundDev, "应该包含 example.dev")
+
+		// example.dev 不应该出现（dev 不在白名单中，未被加入 TLD 列表）
+		for _, domain := range resp.Matched {
+			assert.NotEqual(t, "example.dev", domain.Domain, "不应该包含 example.dev")
+		}
 	})
 }
 
