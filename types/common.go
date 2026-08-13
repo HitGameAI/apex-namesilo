@@ -283,7 +283,7 @@ const (
 	DefaultType       = ResponseTypeXML // NameSilo API 默认返回 XML
 	DefaultBaseURL    = "https://www.namesilo.com/api"
 	DefaultPublicURL  = "https://www.namesilo.com/public/api"
-	DefaultTimeout    = 30 * time.Second
+	DefaultTimeout    = 10 * time.Second
 )
 
 // 分页默认值

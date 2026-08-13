@@ -14,6 +14,7 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"net/url"
 
@@ -141,6 +142,14 @@ func (c *Client) logRequestResponse(ctx context.Context, operation, fullURL stri
 	}
 
 	if apiErr != nil {
+		if errors.Is(apiErr, context.DeadlineExceeded) || errors.Is(apiErr, context.Canceled) {
+			c.logger.WarnContextKV(ctx, "⏱️ NameSilo API timeout",
+				"operation", operation,
+				"url", fullURL,
+				"error", apiErr.Error(),
+			)
+			return
+		}
 		c.logger.ErrorContextKV(ctx, "❌ NameSilo API error",
 			"operation", operation,
 			"url", fullURL,
