@@ -13,7 +13,7 @@ package account
 import (
 	"context"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // GetOrderDetails 获取订单详情

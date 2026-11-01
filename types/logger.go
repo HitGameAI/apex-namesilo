@@ -11,7 +11,7 @@
 package types
 
 import (
-	logger "github.com/kamalyes/go-logger"
+	logger "github.com/HitGameAI/apex-toolbox/pkg/logger"
 )
 
 // Logger 日志接口，直接复用 go-logger.ILogger

@@ -13,7 +13,7 @@ package account
 import (
 	"context"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // GetBalance 获取账户余额

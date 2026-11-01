@@ -13,8 +13,8 @@ package client
 import (
 	"context"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
-	"github.com/kamalyes/go-toolbox/pkg/mathx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/mathx"
 )
 
 // Client NameSilo API 客户端

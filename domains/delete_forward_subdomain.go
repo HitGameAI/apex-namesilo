@@ -13,7 +13,7 @@ package domains
 import (
 	"context"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // DeleteForwardSubDomain 删除子域名转发

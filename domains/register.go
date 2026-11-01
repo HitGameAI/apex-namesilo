@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // Register 注册域名

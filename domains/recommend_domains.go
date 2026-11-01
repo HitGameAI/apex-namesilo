@@ -15,8 +15,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kamalyes/go-toolbox/pkg/mathx"
-	"github.com/kamalyes/go-toolbox/pkg/random"
+	"github.com/HitGameAI/apex-toolbox/pkg/mathx"
+	"github.com/HitGameAI/apex-toolbox/pkg/random"
 )
 
 // RecommendDomains 推荐域名（基于关键词生成推荐域名列表）

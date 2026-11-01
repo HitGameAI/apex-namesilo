@@ -13,7 +13,7 @@ package transfer
 import (
 	"context"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // UpdateChangeEPPCode 更改待转移域名的 EPP 授权码

@@ -13,7 +13,7 @@ package transfer
 import (
 	"context"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // UpdateResubmit 重新提交域名转移到注册局

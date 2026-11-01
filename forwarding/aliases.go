@@ -11,8 +11,8 @@
 package forwarding
 
 import (
-	namesilo "github.com/kamalyes/go-namesilo"
-	"github.com/kamalyes/go-namesilo/types"
+	namesilo "github.com/HitGameAI/apex-namesilo"
+	"github.com/HitGameAI/apex-namesilo/types"
 )
 
 // ============================================================================

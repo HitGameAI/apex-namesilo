@@ -15,8 +15,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	namesilo "github.com/kamalyes/go-namesilo"
-	"github.com/kamalyes/go-toolbox/pkg/osx"
+	namesilo "github.com/HitGameAI/apex-namesilo"
+	"github.com/HitGameAI/apex-toolbox/pkg/osx"
 )
 
 // DoPublicRequest 执行公开 API 请求（不需要 API Key）

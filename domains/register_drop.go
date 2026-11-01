@@ -14,7 +14,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // RegisterDrop 使用 Drop-Catching 注册域名

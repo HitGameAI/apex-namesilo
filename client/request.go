@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"net/url"
 
-	namesilo "github.com/kamalyes/go-namesilo"
-	"github.com/kamalyes/go-toolbox/pkg/errorx"
-	"github.com/kamalyes/go-toolbox/pkg/osx"
+	namesilo "github.com/HitGameAI/apex-namesilo"
+	"github.com/HitGameAI/apex-toolbox/pkg/errorx"
+	"github.com/HitGameAI/apex-toolbox/pkg/osx"
 )
 
 // DoRequest 执行 API 请求（公开给子模块使用）

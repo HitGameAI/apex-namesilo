@@ -16,7 +16,7 @@ import (
 	"strings"
 	"testing"
 
-	logger "github.com/kamalyes/go-logger"
+	logger "github.com/HitGameAI/apex-toolbox/pkg/logger"
 	"github.com/stretchr/testify/assert"
 )
 

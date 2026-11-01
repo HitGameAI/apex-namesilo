@@ -14,7 +14,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // ForwardDomain 设置域名转发

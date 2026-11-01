@@ -14,8 +14,8 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
-	"github.com/kamalyes/go-toolbox/pkg/mathx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/mathx"
 )
 
 // ListExpiringDomains 列出即将过期的域名

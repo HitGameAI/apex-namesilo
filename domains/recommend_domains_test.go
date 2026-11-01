@@ -14,7 +14,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/kamalyes/go-namesilo/client"
+	"github.com/HitGameAI/apex-namesilo/client"
 	"github.com/stretchr/testify/assert"
 )
 

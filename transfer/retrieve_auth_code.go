@@ -13,7 +13,7 @@ package transfer
 import (
 	"context"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // RetrieveAuthCode 获取域名的授权码(EPP Code)

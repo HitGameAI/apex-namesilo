@@ -14,7 +14,7 @@ import (
 	"context"
 	"net/url"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // ForwardSubDomain 转发子域名

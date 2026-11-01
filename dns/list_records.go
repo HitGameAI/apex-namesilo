@@ -13,7 +13,7 @@ package dns
 import (
 	"context"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // ListRecords 列出 DNS 记录

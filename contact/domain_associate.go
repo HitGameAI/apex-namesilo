@@ -13,8 +13,8 @@ package contact
 import (
 	"context"
 
-	"github.com/kamalyes/go-namesilo"
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-namesilo"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // AssociateContactToDomain 关联联系人配置文件到域名

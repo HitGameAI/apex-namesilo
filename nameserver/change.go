@@ -14,8 +14,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kamalyes/go-namesilo/types"
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-namesilo/types"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // Change 更改域名服务器

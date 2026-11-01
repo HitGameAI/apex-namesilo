@@ -13,8 +13,8 @@ package contact
 import (
 	"context"
 
-	namesilo "github.com/kamalyes/go-namesilo"
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	namesilo "github.com/HitGameAI/apex-namesilo"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // DeleteContact 删除联系人配置文件

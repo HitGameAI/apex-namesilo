@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // ConfigureEmailForward 配置邮件转发

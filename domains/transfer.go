@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // Transfer 转移域名

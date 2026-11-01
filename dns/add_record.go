@@ -14,7 +14,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // AddRecord 添加 DNS 记录

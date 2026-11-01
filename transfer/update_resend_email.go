@@ -13,7 +13,7 @@ package transfer
 import (
 	"context"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // UpdateResendEmail 重新发送域名转移管理员邮件

@@ -14,7 +14,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // CheckTransferAvailability 检查域名转移可用性

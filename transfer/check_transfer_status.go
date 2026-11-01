@@ -13,7 +13,7 @@ package transfer
 import (
 	"context"
 
-	"github.com/kamalyes/go-toolbox/pkg/httpx"
+	"github.com/HitGameAI/apex-toolbox/pkg/httpx"
 )
 
 // CheckTransferStatus 检查域名转移状态
